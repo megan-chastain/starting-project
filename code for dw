@@ -1,0 +1,327 @@
+def create_dw() -> None: 
+    """Create the data warehouse by creating customer, product, and sale tables.""" 
+    pass 
+ 
+def main() -> None: 
+    """Main function to create the data warehouse.""" 
+    logger.info("Starting data warehouse creation...") 
+    create_dw() 
+    logger.info("Data warehouse creation complete.") 
+ 
+if __name__ == "__main__": 
+    main() 
+
+  
+
+Match the purpose to each part of the script. 
+
+  
+
+Executes the function responsible for creating the data warehouse. 
+
+Correct match: 
+
+create_dw() 
+
+Defines a function to create the data warehouse 
+
+Correct match: 
+
+def create_dw() -&gt; None: 
+
+Logs a message to indicate the start of the data warehouse creation process. 
+
+Correct match: 
+
+logger.info("Starting data warehouse creation...") 
+
+Logs a message indicating that the data warehouse creation has successfully finished. 
+
+Correct match: 
+
+logger.info("Data warehouse creation complete.") 
+
+ 
+
+ 
+
+ 
+
+ 
+
+def create_dw() -> None: 
+    """Create the data warehouse by creating customer, product, and sale tables.""" 
+    try: 
+        # Connect to the SQLite database 
+        conn = sqlite3.connect(DB_PATH) 
+        # Will need more magic here.... 
+        # Close the connection 
+        conn.close() 
+        logger.info("Data warehouse created successfully.") 
+ 
+    except sqlite3.Error as e: 
+        logger.error(f"Error connecting to the database: {e}") 
+ 
+    except Exception as e: 
+        logger.error(f"An unexpected error occurred: {e}") 
+ 
+    finally: 
+        if conn: 
+            conn.close() 
+
+  
+
+Match the purpose to each part of the script. 
+
+  
+
+Prompt 1Establishes a connection to the SQLite database using the provided file path. 
+
+Answer for prompt 1 Establishes a connection to the SQLite database using the provided file path. 
+
+Prompt 2Logs a success message after creating the data warehouse. 
+
+Answer for prompt 2 Logs a success message after creating the data warehouse. 
+
+Prompt 3finally: 
+
+Answer for prompt 3 finally: 
+
+Prompt 4Closes the database connection, ensuring resources are released. 
+
+Answer for prompt 4 Closes the database connection, ensuring resources are released. 
+
+Prompt 5Logs a SQLite connection error message 
+
+Answer for prompt 5 Logs a SQLite connection error message 
+
+ 
+
+def create_customer_table(cursor: sqlite3.Cursor) -> None: 
+    """Create customer table in the data warehouse.""" 
+    try: 
+        cursor.execute(""" 
+            CREATE TABLE IF NOT EXISTS customer ( 
+                customer_id INTEGER PRIMARY KEY, 
+                name TEXT NOT NULL, 
+                region TEXT, 
+                join_date TEXT  -- ISO 8601 format recommended for SQLite 
+            ) 
+        """) 
+        logger.info("customer table created.") 
+    except sqlite3.Error as e: 
+        logger.error(f"Error creating customer table: {e}") 
+
+  
+
+Match the purpose to the code.  
+
+Prompt 1Ensures the customer table is created only if it does not already exist. 
+
+Answer for prompt 1 Ensures the customer table is created only if it does not already exist. 
+
+Prompt 2Add this after each field definition (except the last) 
+
+Answer for prompt 2 Add this after each field definition (except the last) 
+
+Prompt 3creates a field named customer_id that serves as the primary key (unique identifier) 
+
+Answer for prompt 3 creates a field named customer_id that serves as the primary key (unique identifier) 
+
+Prompt 4creates a field named join_date of the type TEXT (that can be NULL) 
+
+Answer for prompt 4 creates a field named join_date of the type TEXT (that can be NULL) 
+
+Prompt 5creates a field named name of the type TEXT that cannot be NULL 
+
+Answer for prompt 5 creates a field named name of the type TEXT that cannot be NULL 
+
+Prompt 6creates a field named region of the type TEXT (that can be NULL) 
+
+Answer for prompt 6 creates a field named region of the type TEXT (that can be NULL) 
+
+ 
+
+ 
+
+ 
+
+ 
+
+def create_product_table(cursor: sqlite3.Cursor) -> None: 
+    """Create product table in the data warehouse.""" 
+    try: 
+        cursor.execute(""" 
+            CREATE TABLE IF NOT EXISTS product ( 
+                product_id INTEGER PRIMARY KEY, 
+                name TEXT NOT NULL, 
+                category TEXT, 
+                unit_price_usd REAL NOT NULL 
+            ) 
+        """) 
+        logger.info("product table created.") 
+ 
+    except sqlite3.Error as e: 
+        logger.error(f"Error creating product table: {e}") 
+
+  
+
+Match the type of data to the SQL Field Type. 
+
+Prompt 1A floating-point number, used for storing precise decimal values. 
+
+Answer for prompt 1 A floating-point number, used for storing precise decimal values. 
+
+Prompt 2A string of characters, used for names, addresses, or any textual data. 
+
+Answer for prompt 2 A string of characters, used for names, addresses, or any textual data. 
+
+Prompt 3A whole number, often used for IDs or counts. 
+
+Answer for prompt 3 A whole number, often used for IDs or counts. 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+def create_sale_table(cursor: sqlite3.Cursor) -> None: 
+    """Create sale table in the data warehouse.""" 
+    try: 
+        cursor.execute(""" 
+            CREATE TABLE IF NOT EXISTS sale ( 
+                sale_id INTEGER PRIMARY KEY, 
+                customer_id INTEGER, 
+                product_id INTEGER, 
+                store_id INTEGER, 
+                campaign_id INTEGER, 
+                sale_date DATE, 
+                quantity INTEGER NOT NULL, 
+                sale_amount_usd INTEGER NOT NULL, 
+                FOREIGN KEY (customer_id) REFERENCES customer(customer_id), 
+                FOREIGN KEY (product_id) REFERENCES product(product_id) 
+            ) 
+        """) 
+        logger.info("sale table created.") 
+    except sqlite3.Error as e: 
+        logger.error(f"Error creating sale table: {e}") 
+
+  
+
+Match the purpose to the code.  
+
+  
+
+Prompt 1creates a field named quantity of the type INTEGER that cannot be NULL 
+
+Answer for prompt 1 creates a field named quantity of the type INTEGER that cannot be NULL 
+
+Prompt 2Ensures that every sale is linked to a valid customer in the customer table. 
+
+Answer for prompt 2 Ensures that every sale is linked to a valid customer in the customer table. 
+
+Prompt 3Ensures that every sale is linked to a valid product in the product table. 
+
+Answer for prompt 3 Ensures that every sale is linked to a valid product in the product table. 
+
+Prompt 4Defines the column for storing the unique identifier for each sale. 
+
+Answer for prompt 4 Defines the column for storing the unique identifier for each sale. 
+
+ 
+
+def insert_products(products_df: pd.DataFrame, cursor: sqlite3.Cursor) -> None: 
+    """Insert products data into the product table with explicit mapping.""" 
+    try: 
+        # Check required columns 
+        required_columns = {"ProductID", "ProductName", "Category", "UnitPrice"} 
+        if not required_columns.issubset(products_df.columns): 
+            logger.error(f"Missing columns in products DataFrame: {required_columns - set(products_df.columns)}") 
+            return 
+ 
+        # Map CSV columns to database table columns 
+        products_df = products_df.rename( 
+            columns={ 
+                "ProductID": "product_id",  # Map CSV column -> DB column 
+                "ProductName": "name", 
+                "Category": "category", 
+                "UnitPrice": "unit_price_usd" 
+            } 
+        ) 
+        products_df.to_sql("product", cursor.connection, if_exists="append", index=False) 
+        logger.info("Products data inserted into the product table.") 
+    except sqlite3.Error as e: 
+        logger.error(f"Error inserting products: {e}") 
+        raise 
+
+Given the following code snippets, match the purpose to the snippet letter.  
+
+A.  products_df.rename( 
+    columns={ 
+        "ProductID": "product_id", 
+        "ProductName": "name", 
+        "Category": "category", 
+        "UnitPrice": "unit_price_usd" 
+    } 
+) 
+
+B.    required_columns = {"ProductID", "ProductName", "Category", "UnitPrice"} 
+
+C.    if not required_columns.issubset(products_df.columns): 
+
+D.  products_df.to_sql("product", cursor.connection, if_exists="append", index=False) 
+
+E.  logger.error(f"Error inserting products: {e}") 
+
+F.   def insert_products(products_df: pd.DataFrame, cursor: sqlite3.Cursor) -> None 
+
+Uses a Python dictionary to map DataFrame column names (keys) to database table columns names (values) 
+
+Correct match: 
+
+A 
+
+Inserts the DataFrame records into the SQLite database table. 
+
+Correct match: 
+
+D 
+
+Defines a set (no duplicate entries) of the required column names. 
+
+Correct match: 
+
+B 
+
+Logs an error if inserting data fails. 
+
+Correct match: 
+
+E 
+
+Function definition with parameters and return type. 
+
+Correct match: 
+
+F 
+
+Checks if the DataFrame contains the column names required for this insertion. 
+
+Correct match: 
+
+C 
