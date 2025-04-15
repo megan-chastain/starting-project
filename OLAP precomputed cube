@@ -1,0 +1,28 @@
+The following Python function, generate_column_names, creates clear column names for a precomputed OLAP cube by combining dimensions with metrics and their respective aggregation functions to build column names. 
+
+def generate_column_names(dimensions: list, metrics: dict) -> list:
+    """Generate explicit column names for OLAP cube"""
+    column_names = dimensions.copy()
+    
+    for column, agg_funcs in metrics.items():
+        if isinstance(agg_funcs, list):
+            for func in agg_funcs:
+                column_names.append(f"{column}_{func}")
+        else:
+            column_names.append(f"{column}_{agg_funcs}")
+    
+    # Remove trailing underscores from all column names
+    column_names = [col.rstrip("_") for col in column_names]
+    
+    return column_names
+For example, if we provide these inputs:
+
+dimensions = ["DayOfWeek", "product_id", "customer_id"]
+
+metrics = {
+    "sale_amount_usd": ["sum", "mean"],
+    "sale_id": "count"
+}
+We can get a list of column names like the following:
+
+["DayOfWeek", "product_id", "customer_id", "sale_amount_usd_sum", "sale_amount_usd_mean", "sale_id_count"]
