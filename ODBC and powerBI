@@ -1,0 +1,212 @@
+Task 1: Set Up Your BI Environment (20 min)
+Windows (Power BI) -  Initial Setup
+We’ll use Power BI Desktop and an ODBC connection to read data from our SQLite database. There are 3 key tasks:
+
+Install Power BI Desktop (if you haven't yet) from: https://powerbi.microsoft.com/downloadsLinks to an external site.
+Install SQLite ODBC Driver  from: https://www.ch-werner.de/sqliteodbcLinks to an external site.
+Configure ODBC Data Source Name (DSN)
+See this video (or work with your AI) How to Connect Power BI with SQLite Database and Import Data - 6 minute video
+https://www.youtube.com/watch?v=v9OG5Ry5zDULinks to an external site.
+
+
+More help on Task 3 (after installing the ODBC driver):
+
+Open ODBC Data Sources (64-bit) from the Start Menu.
+Click the System DSN tab.
+Click Add... → choose SQLite3 ODBC Driver (or whatever data store you are using) → click Finish.
+Name it SmartSalesDSN (or any name you prefer).
+Click Browse and select your database file: e.g., smart_sales.db (or whatever you named it). 
+Click OK to save.
+ 
+
+Mac/Linux (Spark SQL) - Initial Setup
+Install Apache Spark
+Download the SQLite JDBC Driver from https://github.com/xerial/sqlite-jdbcLinks to an external site.
+Follow the Usage instructions in the README. Download the .jar file. I make a lib folder in my project repository and put it there. 
+Set up SQLite JDBC Driver
+Verify PySpark works in Jupyter Notebook
+ 
+
+# Verify Spark works
+from pyspark.sql import SparkSession
+spark = SparkSession.builder.appName("SmartSales").getOrCreate()
+print(spark)
+
+Task 2: Connect to Your Data Warehouse (20 min)
+Now, we need to establish a connection between our BI tool and our SQLite data warehouse (e.g., smart_sales.db).
+
+Windows (Power BI) - Load Tables
+Open Power BI Desktop.
+Click Get Data (top left) → Select ODBC from the list.
+Choose the DSN you created in Task 1 (e.g., SmartSalesDSN).
+Click OK. Wait a moment. Power BI will show a list of available tables.
+Select the tables you want to analyze - for most of us: 
+Customer table
+Product table
+Sales table
+Click Load to bring the tables into Power BI.
+Switch to Model view (left panel) to see how the tables are connected.
+ 
+
+
+Mac/Linux (Spark SQL) - Load Tables
+Start a Jupyter Notebook
+Connect to SQLite using PySpark
+Verify tables are loaded
+
+
+# Add all imports once, at the top of the file
+from pyspark.sql import SparkSession
+
+# Start a Spark Session
+spark = SparkSession.builder.appName("SmartSales").getOrCreate()
+
+# Load one table (repeat for others as needed)
+df_sales = spark.read.format("jdbc").option("url", "jdbc:sqlite:data/dw/smart_sales.db").option("dbtable", "sales").load()
+
+df_sales.show()
+
+# Change "sales" to "product" or "customer" to load other tables.
+ 
+
+ 
+
+Task 3: Query & Aggregate Data (60 min)
+We will query the data warehouse and extract key insights.
+
+ Windows (Power BI) - SQL Query Editor
+We’ll use Power BI’s Advanced Editor to write a custom SQL query.
+
+Open Power BI Desktop.
+In the Home tab, click Transform Data to open Power Query Editor.
+In Power Query, click Advanced Editor (top menu).
+Delete any code in the editor and replace it with your SQL query (example below). You must use your table names and column names for the SQL to work. 
+SELECT c.name, SUM(s.amount) AS total_spent
+FROM sale s
+JOIN customer c ON s.customer_id = c.customer_id
+GROUP BY c.name
+ORDER BY total_spent DESC;
+Click Done.
+Rename the new query (on the left) to something like Top Customers or whatever you are focusing on.
+Click Close & Apply (upper left) to return to the report view.
+You can now use this table in visuals (e.g., bar chart).
+Mac/Linux (Spark SQL) - Query
+We’ll use Spark SQL to perform a grouped query, then convert the result to a Pandas DataFrame for visualization.
+
+Write a Spark SQL query for total revenue per customer.
+Store the results in a Pandas DataFrame for visualization.
+Review the results.
+from pyspark.sql import SparkSession
+
+# Start a Spark session
+spark = SparkSession.builder.appName("SmartSales").getOrCreate()
+
+# Register DataFrames as temporary views (if not already done)
+df_sales.createOrReplaceTempView("sales")
+df_customer.createOrReplaceTempView("customer")
+
+# Write query using Spark SQL
+df_top_customers = spark.sql("""
+SELECT c.name, SUM(s.amount) AS total_spent
+FROM sales s
+JOIN customer c ON s.customer_id = c.customer_id
+GROUP BY c.name
+ORDER BY total_spent DESC
+""")
+
+# Show Spark results
+df_top_customers.show()
+
+# Convert to Pandas for use with charts
+import pandas as pd
+df_top_customers_pd = df_top_customers.toPandas()
+Task 4: Slice, Dice, and Drilldown (60 min)
+We will implement slicing, dicing, and drilldown techniques to analyze sales.
+
+Windows (Power BI) - Slice, Dice, and Drilldown
+Slicing: Add a date range slicer
+Dicing: Create a matrix visual for sales by product & region
+Drilldown: Enable drill-through to explore sales by year → quarter → month
+Task 1: Slicing in Power BI (by Date)
+
+Since SQLite doesn’t have real "Date" fields, we’ll use Power BI's Transform Data to extract parts of the date for slicing, dicing, and drilldown.
+
+Click Transform Data to open Power Query.
+Select the sales table.
+Select the order_date column (or any "date" field).
+On the top menu, click Add Column → Date → Year.
+Then click Add Column → Date → Quarter.
+Then click Add Column → Date → Month → Name of Month.
+Click Close & Apply to save changes and return to the report view.
+In Power BI, go to the Report view (center icon on the left).
+From the Visualizations pane, click on the Slicer icon.
+Drag a date field into the slicer.
+If it doesn’t show a range, click the dropdown (upper-right corner of slicer) and select Between to enable a date range slider.
+Task 2: Dicing in Power BI (by Product Attributes)
+
+To explore sales by product attributes (e.g. category and region or other characteristics), we’ll create a Matrix visual in Power BI.
+
+Go to the Report view.
+From the Visualizations pane, click the Matrix visual.
+Drag your first product feature (e.g. category) to the Rows field well.
+Drag your first product feature (e.g. region) to the Columns field well.
+Drag a numeric field to the Values field well.
+Optional: Format the numeric values by clicking the column dropdown in the Values area.
+This matrix will help us “dice” the data and break it down by two categorical dimensions: product and region.
+
+ 
+
+Task 3: Drilldown in Power BI (Year → Quarter → Month)
+
+To explore sales over time, we’ll use a column or line chart and enable drilldown so we can click into sales by year, quarter, and month.
+
+Go to the Report view.
+From the Visualizations pane, click on either the Clustered Column Chart or Line Chart.
+Drag your Year, Quarter, and Month fields (created earlier from order_date) into the X-Axis or Axis field in that order:
+First: order_year
+Then: order_quarter
+Then: order_month
+Drag your numeric value (e.g., total amount) into the Values area.
+At the top left of the chart, click the drilldown arrow icon (a split-down arrow).
+Click on a bar or line point in the chart to drill from Year → Quarter → Month.
+To move back up, click the up arrow near the same spot.
+If nothing happens when clicking, make sure the chart supports hierarchy and the drilldown mode is active (look for the split arrow).
+
+
+Mac/Linux (Spark SQL & Python) - Slice, Dice, and Drilldown
+Slicing: Filter sales by date range
+Dicing: Group sales by product & region
+Drilldown: Aggregate sales by year → quarter → month
+
+df_filtered = df_sales.filter(df_sales.order_date >= "2023-01-01")
+
+df_sales.groupby("product_category", "region").sum("amount").show()
+
+df_sales.groupby("year", "quarter", "month").sum("amount").show()
+
+ 
+
+Task 5: Create Interactive Visualizations (60 min)
+We will now visualize the results in both Power BI and Python (Seaborn/Matplotlib).
+
+Windows (Power BI) - Charts
+Create a bar chart for Top Customers
+Create a line chart for Sales Trends
+Add a slicer for product categories
+To create your visuals:
+
+Go to Report View.
+Use the Visualizations pane to choose a chart (e.g., Bar, Line).
+Drag the appropriate field into the chart (e.g., customer name to Axis, total spent to Values).
+Use Slicers to filter by category or region if you’ve added those earlier.
+
+Mac/Linux (Python + Seaborn/Matplotlib)
+Create a bar chart for Top Customers
+Create a line chart for Sales Trends
+# All imports at the top, organized
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+sns.barplot(data=df_top_customers_pd, x="name", y="total_spent")
+plt.xticks(rotation=45)
+plt.show()
